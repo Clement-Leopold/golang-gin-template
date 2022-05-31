@@ -1,0 +1,16 @@
+{
+  "server": {
+    "port": "10010"
+  },
+  "context":{
+    "timeout":2
+  },
+  "database": {
+      "host": "localhost",
+      "port": 5432,
+      "user": "postgres",
+      "pass": "postgres",
+      "name": "d_interview"
+  }
+
+}

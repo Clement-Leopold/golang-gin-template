@@ -9,7 +9,10 @@ import (
 	"strconv"
 
 	"github.com/gin-gonic/gin"
+	"github.com/op/go-logging"
 )
+
+var log = logging.MustGetLogger("UserCRUD")
 
 func UserEntityRoute(router *gin.RouterGroup) {
 	userMethodImpl = method.UserMethodImpl(repository.NewUserRepositoryImpl(common.DB))
@@ -24,20 +27,31 @@ func createUser(ctx *gin.Context) {
 	user := domains.User{}
 	err := ctx.BindJSON(&user)
 	if err != nil {
-		ctx.JSON(http.StatusBadRequest, common.Param)
+		log.Error(err)
+		ctx.JSON(http.StatusBadRequest, common.ParamResponse())
 		return
 	}
-	userMethodImpl.Create(ctx, &user)
+	err = userMethodImpl.Create(ctx, &user)
+	if err != nil {
+		log.Error(err)
+		ctx.JSON(http.StatusInternalServerError, common.SystemResponse())
+	}
+	ctx.JSON(http.StatusOK, common.SucResponse(user))
+
 }
 
 func getUser(ctx *gin.Context) {
 	id := ctx.Param("id")
 	if id == "" {
-		ctx.JSON(http.StatusBadRequest, common.Param)
+		ctx.JSON(http.StatusBadRequest, common.ParamResponse())
 		return
 	}
-	user, _ := userMethodImpl.GetByID(ctx, id)
-	ctx.JSON(http.StatusOK, user)
+	user, err := userMethodImpl.GetByID(ctx, id)
+	if err != nil {
+		log.Error(err)
+		ctx.JSON(http.StatusInternalServerError, common.SystemResponse())
+	}
+	ctx.JSON(http.StatusOK, common.SucResponse(user))
 }
 
 func putUser(ctx *gin.Context) {
@@ -45,10 +59,16 @@ func putUser(ctx *gin.Context) {
 	user := domains.User{}
 	err := ctx.BindJSON(&user)
 	if err != nil {
-		ctx.JSON(http.StatusBadRequest, err)
+		log.Error(err)
+		ctx.JSON(http.StatusBadRequest, common.ParamError(nil))
 	}
 	user.Id = id
-	userMethodImpl.Update(ctx, &user)
+	err = userMethodImpl.Update(ctx, &user)
+	if err != nil {
+		log.Error(err)
+		ctx.JSON(http.StatusInternalServerError, common.SystemResponse())
+	}
+	ctx.JSON(http.StatusOK, common.SucResponse(user))
 }
 
 func deleteUser(ctx *gin.Context) {
@@ -57,7 +77,12 @@ func deleteUser(ctx *gin.Context) {
 		ctx.JSON(http.StatusBadRequest, common.Param)
 		return
 	}
-	userMethodImpl.Delete(ctx, id)
+	err := userMethodImpl.Delete(ctx, id)
+	if err != nil {
+		log.Error(err)
+		ctx.JSON(http.StatusInternalServerError, common.SystemResponse())
+	}
+	ctx.JSON(http.StatusOK, common.SucResponse(id))
 }
 
 func getAll(ctx *gin.Context) {
@@ -72,7 +97,8 @@ func getAll(ctx *gin.Context) {
 	}
 	user, err := userMethodImpl.Get(ctx, int16(limit), int16(offset))
 	if err != nil {
-		ctx.JSON(http.StatusInternalServerError, err)
+		log.Error(err)
+		ctx.JSON(http.StatusInternalServerError, common.SystemResponse())
 	}
 	ctx.JSON(http.StatusOK, user)
 }

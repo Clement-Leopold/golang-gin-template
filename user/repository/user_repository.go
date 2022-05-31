@@ -41,11 +41,14 @@ func (ur *userSQLRepository) Create(ctx context.Context, u *domains.User) error 
 	query := "insert into t_accounts(id, name, dob, address, description, created_at) values ($1, $2, $3, $4, $5, $6) RETURNING id"
 	stmt, err := ur.DB.PrepareContext(ctx, query)
 	if err != nil {
-		return err
+		return common.DatabaseError(err)
 	}
 	var userId string
 	err = stmt.QueryRowContext(ctx, u.Id, u.Name, u.Dob, u.Address, u.Description, time.Now()).Scan(&userId)
-	return err
+	if err != nil || userId == "" {
+		return common.DatabaseError(err)
+	}
+	return nil
 }
 
 func (ur *userSQLRepository) Update(ctx context.Context, u *domains.User) error {
@@ -56,7 +59,10 @@ func (ur *userSQLRepository) Update(ctx context.Context, u *domains.User) error 
 	}
 	var userId string
 	err = stmt.QueryRowContext(ctx, u.Name, u.Dob, u.Address, u.Description, u.CreatedAt, u.Id).Scan(&userId)
-	return err
+	if err != nil || userId == "" {
+		return common.DatabaseError(err)
+	}
+	return nil
 }
 
 func (ur *userSQLRepository) Delete(ctx context.Context, id string) error {
@@ -65,9 +71,11 @@ func (ur *userSQLRepository) Delete(ctx context.Context, id string) error {
 	if err != nil {
 		return &common.BusinessError{Err: err, Code: common.DatabaseCode, Message: common.Database}
 	}
-	var userId string
-	err = stmt.QueryRowContext(ctx, id).Scan(&userId)
-	return err
+	_, err = stmt.ExecContext(ctx, id)
+	if err != nil {
+		return common.DatabaseError(err)
+	}
+	return nil
 }
 
 func (ur *userSQLRepository) Get(ctx context.Context, limit int16, offset int16) ([]domains.User, error) {

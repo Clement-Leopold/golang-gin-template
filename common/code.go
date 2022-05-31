@@ -25,4 +25,21 @@ const (
 const (
 	DatabaseCode ErrorCode = "51000"
 	ParamCode    ErrorCode = "41000"
+	Success      ErrorCode = "10000"
 )
+
+func DatabaseError(err error) *BusinessError {
+	return &BusinessError{
+		Err:     err,
+		Code:    DatabaseCode,
+		Message: Database,
+	}
+}
+
+func ParamError(err error) *BusinessError {
+	return &BusinessError{
+		Err:     err,
+		Code:    ParamCode,
+		Message: Param,
+	}
+}

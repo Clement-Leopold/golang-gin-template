@@ -5,7 +5,6 @@ import (
 	"backend-test-chenxianhao/user-management/domains"
 	"context"
 	"database/sql"
-	"time"
 )
 
 type userSQLRepository struct {
@@ -44,7 +43,7 @@ func (ur *userSQLRepository) Create(ctx context.Context, u *domains.User) error 
 		return common.DatabaseError(err)
 	}
 	var userId string
-	err = stmt.QueryRowContext(ctx, u.Id, u.Name, u.Dob, u.Address, u.Description, time.Now()).Scan(&userId)
+	err = stmt.QueryRowContext(ctx, u.Id, u.Name, u.Dob, u.Address, u.Description, u.CreatedAt).Scan(&userId)
 	if err != nil || userId == "" {
 		return common.DatabaseError(err)
 	}

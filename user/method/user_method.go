@@ -33,6 +33,7 @@ func (u *userMethod) Delete(ctx context.Context, id string) error {
 }
 
 func (u *userMethod) Update(ctx context.Context, user *domains.User) error {
+	user.CreatedAt = time.Now()
 	return u.userRepo.Update(ctx, user)
 }
 

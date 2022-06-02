@@ -68,7 +68,7 @@ func (ur *userSQLRepository) Delete(ctx context.Context, id string) error {
 	query := "delete from t_accounts where id = $1"
 	stmt, err := ur.DB.PrepareContext(ctx, query)
 	if err != nil {
-		return &common.BusinessError{Err: err, Code: common.DatabaseCode, Message: common.Database}
+		return common.DatabaseError(err)
 	}
 	_, err = stmt.ExecContext(ctx, id)
 	if err != nil {
@@ -82,11 +82,11 @@ func (ur *userSQLRepository) Get(ctx context.Context, limit int16, offset int16)
 	stmt, err := ur.DB.PrepareContext(ctx, query)
 	results := []domains.User{}
 	if err != nil {
-		return nil, &common.BusinessError{Err: err, Code: common.DatabaseCode, Message: common.Param}
+		return nil, common.DatabaseError(err)
 	}
 	rows, err := stmt.QueryContext(ctx, limit, offset)
 	if err != nil {
-		return nil, &common.BusinessError{Err: err, Code: common.DatabaseCode, Message: common.Param}
+		return nil, common.DatabaseError(err)
 	}
 	for rows.Next() {
 		user := domains.User{}
@@ -99,10 +99,86 @@ func (ur *userSQLRepository) Get(ctx context.Context, limit int16, offset int16)
 			&user.CreatedAt,
 		)
 		if err != nil {
-			return nil, &common.BusinessError{Err: err, Code: common.DatabaseCode, Message: common.Param}
+			return nil, common.DatabaseError(err)
 		}
 		results = append(results, user)
 	}
 
+	return results, nil
+}
+
+func (u *userSQLRepository) Following(ctx context.Context, id string, followingId string) error {
+	query := "insert into t_followings (u_id, following_id) values (&1, &2)"
+	stmt, err := u.DB.PrepareContext(ctx, query)
+	if err != nil {
+		return common.DatabaseError(err)
+	}
+	_, err = stmt.ExecContext(ctx, id, followingId)
+	if err != nil {
+		return common.DatabaseError(err)
+	}
+	return nil
+}
+
+func (u *userSQLRepository) UnFollowing(ctx context.Context, id string, followingId string) error {
+	query := "delete from t_followings where u_id = &1 and following_id = &2"
+	stmt, err := u.DB.PrepareContext(ctx, query)
+	if err != nil {
+		return common.DatabaseError(err)
+	}
+	_, err = stmt.ExecContext(ctx, id, followingId)
+	if err != nil {
+		return common.DatabaseError(err)
+	}
+	return nil
+}
+
+func (u *userSQLRepository) GetFollowers(ctx context.Context, id string, limit int16, offset int16) ([]domains.Follower, error) {
+	query := "select u_id, name from t_following, t_accounts where u_id = id and following_id = &1 limit &2 offset &3"
+	stmt, err := u.DB.PrepareContext(ctx, query)
+	if err != nil {
+		return nil, common.DatabaseError(err)
+	}
+	rows, err := stmt.QueryContext(ctx, id, limit, offset)
+	if err != nil {
+		return nil, common.DatabaseError(err)
+	}
+	results := []domains.Follower{}
+	for rows.Next() {
+		follower := domains.Follower{}
+		err = rows.Scan(
+			&follower.Id,
+			&follower.Name,
+		)
+		if err != nil {
+			return nil, common.DatabaseError(err)
+		}
+		results = append(results, follower)
+	}
+	return results, nil
+}
+
+func (u *userSQLRepository) GetFollowings(ctx context.Context, id string, limit int16, offset int16) ([]domains.Follower, error) {
+	query := "select following_id, name from t_following, t_accounts where u_id = id and u_id = &1 limit &2 offset &3"
+	stmt, err := u.DB.PrepareContext(ctx, query)
+	if err != nil {
+		return nil, common.DatabaseError(err)
+	}
+	rows, err := stmt.QueryContext(ctx, id, limit, offset)
+	if err != nil {
+		return nil, common.DatabaseError(err)
+	}
+	results := []domains.Follower{}
+	for rows.Next() {
+		follower := domains.Follower{}
+		err = rows.Scan(
+			&follower.Id,
+			&follower.Name,
+		)
+		if err != nil {
+			return nil, common.DatabaseError(err)
+		}
+		results = append(results, follower)
+	}
 	return results, nil
 }

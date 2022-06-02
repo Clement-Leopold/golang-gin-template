@@ -19,8 +19,10 @@ type ErrorMessage string
 type ErrorCode string
 
 const (
+	//Database Error Message
 	Database ErrorMessage = "d-s error"
-	Param    ErrorMessage = "p-s error"
+	//Param Error Message
+	Param ErrorMessage = "p-s error"
 )
 const (
 	DatabaseCode ErrorCode = "51000"
@@ -28,6 +30,7 @@ const (
 	Success      ErrorCode = "10000"
 )
 
+// DatabaseError: provide a helper for database error wrapper.
 func DatabaseError(err error) *BusinessError {
 	return &BusinessError{
 		Err:     err,
@@ -36,6 +39,7 @@ func DatabaseError(err error) *BusinessError {
 	}
 }
 
+// ParamError: provide a helper for param error wrapper.
 func ParamError(err error) *BusinessError {
 	return &BusinessError{
 		Err:     err,

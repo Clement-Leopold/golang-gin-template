@@ -12,7 +12,7 @@ type userMethod struct {
 	userRepo domains.UserRepository
 }
 
-func UserMethodImpl(ur domains.UserRepository) domains.UseMethod {
+func UserMethodImpl(ur domains.UserRepository) domains.UserMethod {
 	return &userMethod{
 		userRepo: ur,
 	}
@@ -39,4 +39,20 @@ func (u *userMethod) Update(ctx context.Context, user *domains.User) error {
 
 func (u *userMethod) Get(ctx context.Context, limit int16, offset int16) ([]domains.User, error) {
 	return u.userRepo.Get(ctx, limit, offset)
+}
+
+func (u *userMethod) Following(ctx context.Context, id string, followingId string) error {
+	return u.userRepo.Following(ctx, id, followingId)
+}
+
+func (u *userMethod) UnFollowing(ctx context.Context, id string, followingID string) error {
+	return u.userRepo.UnFollowing(ctx, id, followingID)
+}
+
+func (u *userMethod) GetFollowers(ctx context.Context, id string, limit int16, offset int16) ([]domains.Follower, error) {
+	return u.userRepo.GetFollowers(ctx, id, limit, offset)
+}
+
+func (u *userMethod) GetFollowings(ctx context.Context, id string, limit int16, offset int16) ([]domains.Follower, error) {
+	return u.userRepo.GetFollowings(ctx, id, limit, offset)
 }

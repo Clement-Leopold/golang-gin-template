@@ -3,19 +3,14 @@ package routers
 import (
 	"backend-test-chenxianhao/user-management/common"
 	"backend-test-chenxianhao/user-management/domains"
-	"backend-test-chenxianhao/user-management/user/method"
-	"backend-test-chenxianhao/user-management/user/repository"
 	"net/http"
 	"strconv"
 
 	"github.com/gin-gonic/gin"
-	"github.com/op/go-logging"
 )
 
-var log = logging.MustGetLogger("UserCRUD")
-
 func UserEntityRoute(router *gin.RouterGroup) {
-	userMethodImpl = method.UserMethodImpl(repository.NewUserRepositoryImpl(common.DB))
+	userMethodImpl = GetImpl()
 	router.POST("/", createUser)
 	router.GET("/:id", getUser)
 	router.GET("/", getAll)
@@ -102,5 +97,3 @@ func getAll(ctx *gin.Context) {
 	}
 	ctx.JSON(http.StatusOK, user)
 }
-
-var userMethodImpl domains.UseMethod

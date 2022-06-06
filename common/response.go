@@ -15,8 +15,8 @@ func SucResponse(data interface{}) *Response {
 	}
 }
 
-// ParamResponse: helper for param-error response.
-func ParamResponse() *Response {
+// ParamErrorResponse: helper for param-error response.
+func ParamErrorResponse() *Response {
 	return &Response{
 		Code:    ParamCode,
 		Message: Param,
@@ -25,7 +25,7 @@ func ParamResponse() *Response {
 }
 
 // ParamResponse: helper for system-error response.
-func SystemResponse() *Response {
+func SystemErrorResponse() *Response {
 	return &Response{
 		Code:    DatabaseCode,
 		Message: Database,

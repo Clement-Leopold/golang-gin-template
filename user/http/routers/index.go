@@ -3,7 +3,7 @@ package routers
 import (
 	"backend-test-chenxianhao/user-management/common"
 	"backend-test-chenxianhao/user-management/domains"
-	"backend-test-chenxianhao/user-management/user/method"
+	"backend-test-chenxianhao/user-management/user/impl"
 	"backend-test-chenxianhao/user-management/user/repository"
 	"sync"
 
@@ -17,13 +17,13 @@ func InitUserRouters(g *gin.RouterGroup) {
 	FollowerRoute(g)
 }
 
-var userMethodImpl domains.UserMethod
+var userMethodImpl domains.UserFunctions
 var implOnce sync.Once
 var log = logging.MustGetLogger("userRouters")
 
-func GetImpl() domains.UserMethod {
+func GetImpl() domains.UserFunctions {
 	implOnce.Do(func() {
-		userMethodImpl = method.UserMethodImpl(repository.NewUserRepositoryImpl(common.DB))
+		userMethodImpl = impl.UserMethodImpl(repository.NewUserRepositoryImpl(common.DB))
 	})
 	return userMethodImpl
 }

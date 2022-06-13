@@ -52,23 +52,3 @@ Build a RESTful API that can `get/create/update/delete` user data from a persist
   - return the nearby friends
 
 
-## What We Care About
-
-Feel free to use any open-source library as you see fit, but remember that we are evaluating your coding skills and problem solving skills.
-
-Here's what you should aim for:
-
-- Good use of current Node.js/Golang & API design best practices.
-- Good testing approach.
-- Extensible code.
-
-## FAQ
-
-> Where should I send back the result when I'm done?
-
-Create a new branch for this repo and send us a pull request when you think it's ready for review. You don't have to finish everything prior and you can continue to work on it. We don't have a deadline for the task.
-
-
-> What if I have a question?
-
-Create a new issue in the repo or comment in the code review, we will get back to you shortly.

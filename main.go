@@ -2,7 +2,9 @@ package main
 
 import (
 	"backend-test-chenxianhao/user-management/common"
-	"backend-test-chenxianhao/user-management/user/http/routers"
+	"backend-test-chenxianhao/user-management/user/http/routers/handler"
+	"backend-test-chenxianhao/user-management/user/impl"
+	"backend-test-chenxianhao/user-management/user/repository"
 	"fmt"
 	"net/http"
 
@@ -30,8 +32,15 @@ func main() {
 
 // init all routes of all features
 func RouteInit() *gin.Engine {
-	systemRouters := gin.New()
-	user := systemRouters.Group("/v1/users")
-	routers.InitUserRouters(user)
+	systemRouters := gin.Default()
+	systemRouters.Group("/v1/users")
+	userMethodImpl := impl.UserMethodImpl(repository.NewUserRepositoryImpl(common.DB))
+
+	handlerConfig := &handler.Config{
+		R:             systemRouters,
+		UserFunctions: userMethodImpl,
+	}
+
+	handler.NewHandler(handlerConfig)
 	return systemRouters
 }

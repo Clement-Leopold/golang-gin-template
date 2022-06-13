@@ -1,4 +1,4 @@
-package routers
+package handler
 
 import (
 	"backend-test-chenxianhao/user-management/common"
@@ -9,23 +9,27 @@ import (
 	"github.com/gin-gonic/gin"
 )
 
-func FollowerRoute(router *gin.RouterGroup) {
-	userMethodImpl = GetImpl()
+func FollowerRoute(router *gin.RouterGroup, h *Handler) {
 	// following someone
-	router.POST("/:id/followings/:following_id", following)
+	router.POST("/:id/followings/:following_id", h.following)
 	// get followers or followings
-	router.GET("/:id/followings", followers)
+	router.GET("/:id/followings", h.followers)
 	// get the nearest from following list
-	router.GET("/nearest-following/:name", nearest)
+	router.GET("/nearest-following/:name", h.nearest)
 }
 
-func following(ctx *gin.Context) {
+func (h *Handler) following(ctx *gin.Context) {
 	id, followingId, following := ctx.Param("id"), ctx.Param("following_id"), ctx.Query("following")
 	var err error
+	followingUser, err := h.UserFunctions.GetByID(ctx, followingId)
+	if followingUser.Id == "" {
+		ctx.JSON(http.StatusNotFound, common.SystemErrorResponse())
+		return
+	}
 	if following == "1" {
-		err = userMethodImpl.Following(ctx, id, followingId)
+		err = h.UserFunctions.Following(ctx, id, followingId)
 	} else if following == "0" {
-		err = userMethodImpl.UnFollowing(ctx, id, followingId)
+		err = h.UserFunctions.UnFollowing(ctx, id, followingId)
 	}
 	if err != nil {
 		log.Error(err)
@@ -35,7 +39,7 @@ func following(ctx *gin.Context) {
 	ctx.JSON(http.StatusOK, common.SucResponse(nil))
 }
 
-func followers(ctx *gin.Context) {
+func (h *Handler) followers(ctx *gin.Context) {
 	id, following := ctx.Param("id"), ctx.Query("following")
 	limit, err := strconv.Atoi(ctx.Query("limit"))
 	if err != nil {
@@ -47,9 +51,9 @@ func followers(ctx *gin.Context) {
 	}
 	var followers []domains.Follower
 	if following == "1" {
-		followers, err = userMethodImpl.GetFollowings(ctx, id, int16(limit), int16(offset))
+		followers, err = h.UserFunctions.GetFollowings(ctx, id, int16(limit), int16(offset))
 	} else {
-		followers, err = userMethodImpl.GetFollowers(ctx, id, int16(limit), int16(offset))
+		followers, err = h.UserFunctions.GetFollowers(ctx, id, int16(limit), int16(offset))
 	}
 	if err != nil {
 		log.Error(err)
@@ -59,9 +63,9 @@ func followers(ctx *gin.Context) {
 	ctx.JSON(http.StatusOK, common.SucResponse(followers))
 }
 
-func nearest(ctx *gin.Context) {
+func (h *Handler) nearest(ctx *gin.Context) {
 	name := ctx.Param("name")
-	follower, err := userMethodImpl.GetMinimumDistanceForFollowing(ctx, name)
+	follower, err := h.UserFunctions.GetMinimumDistanceForFollowing(ctx, name)
 	if err != nil {
 		log.Error(err)
 		ctx.JSON(http.StatusInternalServerError, common.SystemErrorResponse())

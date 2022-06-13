@@ -1,4 +1,4 @@
-package routers
+package handler
 
 import (
 	"backend-test-chenxianhao/user-management/common"
@@ -11,21 +11,20 @@ import (
 	"github.com/google/uuid"
 )
 
-func UserEntityRoute(router *gin.RouterGroup) {
-	userMethodImpl = GetImpl()
+func UserEntityRoute(router *gin.RouterGroup, h *Handler) {
 	//create
-	router.POST("/", createUser)
+	router.POST("/", h.createUser)
 	//get
-	router.GET("/:id", getUser)
+	router.GET("/:id", h.getUser)
 	//get users
-	router.GET("/", getAll)
+	router.GET("/", h.getAll)
 	// update user
-	router.PUT("/:id", putUser)
+	router.PUT("/:id", h.putUser)
 	// delete user
-	router.DELETE("/:id", deleteUser)
+	router.DELETE("/:id", h.deleteUser)
 }
 
-func createUser(ctx *gin.Context) {
+func (h *Handler) createUser(ctx *gin.Context) {
 	user := domains.User{}
 	err := ctx.BindJSON(&user)
 	if err != nil {
@@ -35,7 +34,7 @@ func createUser(ctx *gin.Context) {
 	}
 	user.Id = uuid.New().String()
 	user.CreatedAt = time.Now()
-	err = userMethodImpl.Create(ctx, &user)
+	err = h.UserFunctions.Create(ctx, &user)
 	if err != nil {
 		ctx.JSON(http.StatusInternalServerError, common.SystemErrorResponse())
 		return
@@ -44,13 +43,13 @@ func createUser(ctx *gin.Context) {
 
 }
 
-func getUser(ctx *gin.Context) {
+func (h *Handler) getUser(ctx *gin.Context) {
 	id := ctx.Param("id")
 	if id == "" {
 		ctx.JSON(http.StatusBadRequest, common.ParamErrorResponse())
 		return
 	}
-	user, err := userMethodImpl.GetByID(ctx, id)
+	user, err := h.UserFunctions.GetByID(ctx, id)
 	if err != nil {
 		log.Error(err)
 		ctx.JSON(http.StatusInternalServerError, common.SystemErrorResponse())
@@ -59,7 +58,7 @@ func getUser(ctx *gin.Context) {
 	ctx.JSON(http.StatusOK, common.SucResponse(user))
 }
 
-func putUser(ctx *gin.Context) {
+func (h *Handler) putUser(ctx *gin.Context) {
 	id := ctx.Param("id")
 	user := domains.User{}
 	err := ctx.BindJSON(&user)
@@ -69,7 +68,7 @@ func putUser(ctx *gin.Context) {
 		return
 	}
 	user.Id = id
-	err = userMethodImpl.Update(ctx, &user)
+	err = h.UserFunctions.Update(ctx, &user)
 	if err != nil {
 		log.Error(err)
 		ctx.JSON(http.StatusInternalServerError, common.SystemErrorResponse())
@@ -78,13 +77,13 @@ func putUser(ctx *gin.Context) {
 	ctx.JSON(http.StatusOK, common.SucResponse(user))
 }
 
-func deleteUser(ctx *gin.Context) {
+func (h *Handler) deleteUser(ctx *gin.Context) {
 	id := ctx.Param("id")
 	if id == "" {
 		ctx.JSON(http.StatusBadRequest, common.Param)
 		return
 	}
-	err := userMethodImpl.Delete(ctx, id)
+	err := h.UserFunctions.Delete(ctx, id)
 	if err != nil {
 		log.Error(err)
 		ctx.JSON(http.StatusInternalServerError, common.SystemErrorResponse())
@@ -93,7 +92,7 @@ func deleteUser(ctx *gin.Context) {
 	ctx.JSON(http.StatusOK, common.SucResponse(id))
 }
 
-func getAll(ctx *gin.Context) {
+func (h *Handler) getAll(ctx *gin.Context) {
 
 	limit, err := strconv.Atoi(ctx.Query("limit"))
 	if err != nil {
@@ -103,7 +102,7 @@ func getAll(ctx *gin.Context) {
 	if err != nil {
 		offset = 0
 	}
-	user, err := userMethodImpl.Get(ctx, int16(limit), int16(offset))
+	user, err := h.UserFunctions.Get(ctx, int16(limit), int16(offset))
 	if err != nil {
 		log.Error(err)
 		ctx.JSON(http.StatusInternalServerError, common.SystemErrorResponse())
